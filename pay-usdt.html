@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BTC Deposit | GainX by Zyricco</title>
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --card-bg-color: #161b22;
+      --text-color: #c9d1d9;
+      --subtle-text-color: #8b949e;
+      --primary-accent-color: #f9aa33; /* Orange for headings */
+      --secondary-accent-color: #2ea043; /* Green for success/buttons */
+      --secondary-accent-hover: #34a853;
+      --border-color: #30363d;
+      --input-bg-color: #010409;
+      --error-color: #f85149;
+      --success-color: var(--secondary-accent-color);
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      font-family: var(--font-family);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .page-container {
+      width: 100%;
+      max-width: 700px;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header .logo {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--primary-accent-color);
+      margin-bottom: 0.5rem;
+    }
+    header .logo span {
+      color: var(--text-color);
+      font-weight: normal;
+    }
+
+    header p {
+      font-size: 1.1rem;
+      color: var(--subtle-text-color);
+    }
+
+    .content-section {
+      background-color: var(--card-bg-color);
+      padding: 2rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      color: var(--primary-accent-color);
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    p, label, small {
+      color: var(--subtle-text-color);
+      line-height: 1.6;
+    }
+
+    label strong {
+        color: var(--text-color);
+    }
+
+    .wallet-info {
+      margin-bottom: 1.5rem;
+    }
+
+    .address-line {
+      display: flex;
+      align-items: center;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      font-size: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background-color: var(--input-bg-color);
+      color: var(--text-color);
+      box-sizing: border-box;
+    }
+
+    #btcAddress {
+      flex-grow: 1;
+      margin-right: 0.5rem;
+      font-family: monospace;
+      font-size: 0.95rem;
+    }
+
+    #btcAddress:read-only {
+        background-color: var(--bg-color); /* Slightly different bg for readonly */
+    }
+
+    #copyButton {
+      background-color: transparent;
+      color: var(--secondary-accent-color);
+      border: 1px solid var(--secondary-accent-color);
+      padding: 0.8rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.1rem; /* Icon size */
+      transition: all 0.2s ease-in-out;
+    }
+
+    #copyButton:hover {
+      background-color: rgba(46, 160, 67, 0.1);
+      border-color: var(--secondary-accent-hover);
+    }
+
+    #copyMessage {
+        font-size: 0.85rem;
+        color: var(--secondary-accent-color);
+        margin-left: 10px;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .qr-code {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    .qr-code p {
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+    #qrcodeDisplay svg {
+      border: 5px solid var(--card-bg-color); /* Match card background for seamless look */
+      border-radius: 8px;
+      background-color: #fff; /* Typical QR background */
+      display: inline-block; /* To center */
+    }
+
+    .confirmation-section .input-box {
+      text-align: left; /* Align label to the left */
+    }
+
+    .confirmation-section input[type="text"] {
+      margin-top: 0.5rem;
+      margin-bottom: 1.5rem; /* Increased margin */
+    }
+
+    button#submitHashBtn {
+      background-color: var(--secondary-accent-color);
+      color: white;
+      padding: 0.9rem 2rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      width: 100%; /* Full width button */
+    }
+
+    button#submitHashBtn:hover {
+      background-color: var(--secondary-accent-hover);
+    }
+
+    .status {
+      margin-top: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+      padding: 0.75rem;
+      border-radius: 6px;
+      display: none; /* Initially hidden */
+    }
+    .status.success {
+        background-color: rgba(46, 160, 67, 0.1);
+        color: var(--success-color);
+        border: 1px solid var(--success-color);
+        display: block;
+    }
+    .status.error {
+        background-color: rgba(248, 81, 73, 0.1);
+        color: var(--error-color);
+        border: 1px solid var(--error-color);
+        display: block;
+    }
+
+    .loading {
+      margin-top: 1rem;
+      color: var(--secondary-accent-color);
+      font-size: 0.95rem;
+      text-align: center;
+      display: none; /* Initially hidden */
+      align-items: center;
+      justify-content: center;
+    }
+    .loading.visible {
+        display: flex;
+    }
+
+    .spinner {
+      border: 3px solid rgba(201, 209, 217, 0.2); /* Lighter border for spinner on dark bg */
+      border-radius: 50%;
+      border-top: 3px solid var(--secondary-accent-color);
+      width: 18px;
+      height: 18px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.85rem;
+      color: var(--subtle-text-color);
+      margin-top: auto; /* Pushes footer to bottom */
+    }
+    footer p {
+        margin-bottom: 0.3rem;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="page-container">
+    <header>
+      <div class="logo">GainX <span>by Zyricco</span></div>
+      <p>Securely Deposit Bitcoin to Your Account</p>
+    </header>
+
+    <main>
+      <section class="content-section deposit-details">
+        <h2>Step 1: Send BTC to Your Deposit Address</h2>
+        <p>Send the desired amount of Bitcoin to the unique address below. Please ensure you are sending BTC on the Bitcoin network.</p>
+
+        <div class="wallet-info">
+          <label for="btcAddress"><strong>Your Unique BTC Deposit Address:</strong></label>
+          <div class="address-line">
+            <input type="text" id="btcAddress" readonly />
+            <button id="copyButton" title="Copy Address">📋</button>
+            <span id="copyMessage">Copied!</span>
+          </div>
+          <small>This address is for Bitcoin (BTC) deposits only. Sending any other cryptocurrency to this address may result in the permanent loss of your funds.</small>
+        </div>
+
+        <div class="qr-code">
+          <p>Or scan the QR code with your wallet app:</p>
+          <div id="qrcodeDisplay">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" shape-rendering="crispEdges" width="160" height="160">
+              <path fill="#ffffff" d="M0 0h29v29H0z"/>
+              <path fill="#000000" d="M0 0h7v7H0zm1 1h5v5H1zm5-1h1M0 22h7v7H0zm1 1h5v5H1zm5-1h1m-6 6h1m2 0h1m2 0h1M22 0h7v7H0zm1 1h5v5h-5zm5-1h1m-6 6h1m2 0h1m2 0h1m-1-5h1m0 2h1m0 2h1M0 8h1v1H0zm2 0h1v1H2zm2 0h1v1H4zm2 0h1v1H6zm3 0h1v1H9zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm3 0h1v1h-1zM8 1h1v1H8zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zM1 8h1v1H1zm0 2h1v1H1zm0 2h1v1H1zm0 2h1v1H1zm0 2h1v1H1zm0 2h1v1H1zm0 2h1v1H1zm0 3h1v1H1zM28 8h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1zm0 3h1v1h-1zM8 21h1v1H8zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zM21 8h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1zm0 2h1v1h-1zM8 9h1v1H8zm6 0h1v1h-1zm2 0h1v1h-1zm4 0h1v1h-1zm-1 1h1v1h-1zm1 1h1v1h-1zm-6 1h1v1h-1zm2 0h1v1h-1zm-1 1h1v1h-1zm-3-2h1v1h-1zm1-1h1v1h-1zm-1-1h1v1H8zm14 0h1v1h-1zm-12 2h1v1h-1zm1 1h1v1h-1zm1 1h1v1h-1zm2 0h1v1h-1zm1-1h1v1h-1zm1-1h1v1h-1zm-6 2h1v1h-1zm10 0h1v1h-1zm-3-1h1v1h-1zm-1-1h1v1h-1zm-1-1h1v1h-1zm2-1h1v1h-1zm1 1h1v1h-1zm1 1h1v1h-1zm0 2h1v1h-1zm-11-5h1v1h-1zm-2 6h1v1h-1zm1 1h1v1h-1zm4 0h1v1h-1zm1 1h1v1h-1zm1 1h1v1h-1zm-6-2h1v1h-1zm1-1h1v1h-1zm-2 2h1v1h-1zm1-1h1v1h-1zm-1 1h1v1H9zm13-1h1v1h-1zm1 1h1v1h-1zm1-1h1v1h-1zm1-1h1v1h-1zm-1-1h1v1h-1zm2 0h1v1h-1zm-3 2h1v1h-1zm-1 1h1v1h-1zm-1 1h1v1h-1zm-1 1h1v1h-1zm-1 1h1v1h-1zm-1 1h1v1h-1zM8 15h1v1H8zm1 1h1v1H9zm2 0h1v1h-1zm1 1h1v1h-1zm1 1h1v1h-1zm1 1h1v1h-1zm-1 1h1v1h-1zm-4-2h1v1h-1zm10-1h1v1h-1zm1 1h1v1h-1zm-2-2h1v1h-1zm1-1h1v1h-1zm3-1h1v1h-1zm-1 1h1v1h-1zm-1 1h1v1h-1zm-1 1h1v1h-1z"/>
+            </svg>
+          </div>
+          <small>Important: After scanning, always verify that the address in your wallet matches the full address displayed above.</small>
+        </div>
+      </section>
+
+      <section class="content-section confirmation-section">
+        <h2>Step 2: Confirm Your Deposit</h2>
+        <p>Once your transaction has received at least one confirmation on the Bitcoin blockchain, paste the Transaction Hash (TXID) below to link it to your deposit and proceed to your dashboard.</p>
+        <div class="input-box">
+          <label for="txnHash"><strong>Enter Transaction Hash (TXID):</strong></label>
+          <input type="text" id="txnHash" placeholder="e.g., 9d04d7c245eb063c604210850d25d3747e418bca8a6df6a8faf4006683a00914" />
+          <button id="submitHashBtn" onclick="validateHash()">Verify & Continue to Dashboard</button>
+          <div class="status" id="status"></div> <div class="loading" id="loading">
+            <div class="spinner"></div> Verifying transaction, please wait...
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 GainX by Zyricco. All rights reserved.</p>
+      <p>Cryptocurrency investments are subject to market risk. Please invest responsibly and ensure all information is correct before proceeding.</p>
+    </footer>
+  </div>
+
+  <script>
+    const btcDepositAddress = "bc1qgxy2yr9xphenk2m5nwextendedtestaddress7qz7ade"; // Example Bech32 address
+    // For the QR code to be truly dynamic with the address above, it would typically be generated by a JS library.
+    // The SVG QR code above is static for this specific "bc1qgxy2yr9xphenk2m5nwextendedtestaddress7qz7ade" address.
+    // If you prepend "bitcoin:" to the address for QR generation, some wallets handle it better:
+    // const qrData = "bitcoin:" + btcDepositAddress;
+
+    const correctHash = "9d04d7c245eb063c604210850d25d3747e418bca8a6df6a8faf4006683a00914"; // Example correct hash
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const btcAddressInput = document.getElementById("btcAddress");
+      if (btcAddressInput) {
+        btcAddressInput.value = btcDepositAddress;
+      }
+
+      const copyButton = document.getElementById("copyButton");
+      const copyMessage = document.getElementById("copyMessage");
+      if (copyButton && btcAddressInput) {
+        copyButton.addEventListener("click", () => {
+          btcAddressInput.select();
+          btcAddressInput.setSelectionRange(0, 99999); // For mobile devices
+
+          try {
+            navigator.clipboard.writeText(btcAddressInput.value).then(() => {
+                copyMessage.style.opacity = "1";
+                setTimeout(() => {
+                    copyMessage.style.opacity = "0";
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                // Fallback for older browsers (less common now)
+                document.execCommand("copy");
+                copyMessage.textContent = "Copied (fallback)!";
+                copyMessage.style.opacity = "1";
+                setTimeout(() => {
+                    copyMessage.style.opacity = "0";
+                     copyMessage.textContent = "Copied!"; // Reset
+                }, 2000);
+            });
+          } catch (err) {
+             console.error('Async clipboard API not available. Using fallback.', err);
+             document.execCommand("copy");
+             copyMessage.textContent = "Copied (fallback)!";
+             copyMessage.style.opacity = "1";
+             setTimeout(() => {
+                 copyMessage.style.opacity = "0";
+                 copyMessage.textContent = "Copied!"; // Reset
+             }, 2000);
+          }
+        });
+      }
+    });
+
+    function validateHash() {
+      const input = document.getElementById("txnHash").value.trim();
+      const statusDiv = document.getElementById("status");
+      const loadingDiv = document.getElementById("loading");
+
+      // Reset status
+      statusDiv.textContent = "";
+      statusDiv.className = "status"; // Reset classes
+      loadingDiv.classList.remove("visible");
+
+      if (!input) {
+        statusDiv.textContent = "⚠️ Please enter a transaction hash.";
+        statusDiv.className = "status error";
+        return;
+      }
+
+      // Simulate network delay & processing
+      loadingDiv.classList.add("visible");
+      statusDiv.className = "status"; // Clear previous status styling
+      statusDiv.style.display = "none"; // Hide status while loading
+
+      setTimeout(() => {
+        loadingDiv.classList.remove("visible");
+        statusDiv.style.display = "block"; // Show status again
+
+        if (input === correctHash) {
+          statusDiv.style.color = ""; // Will be handled by class
+          statusDiv.className = "status success";
+          statusDiv.innerHTML = `✔️ Transaction hash verified! Redirecting to your dashboard...`;
+
+          // Simulate redirect after a short delay
+          setTimeout(() => {
+            window.location.href = "main-fireb.html"; // Make sure this file exists or change URL
+          }, 2500);
+        } else {
+          statusDiv.style.color = ""; // Will be handled by class
+          statusDiv.className = "status error";
+          statusDiv.innerHTML = `❌ Invalid transaction hash. Please double-check the hash and try again.`;
+        }
+      }, 2000); // Simulate 2 seconds verification time
+    }
+  </script>
+</body>
+</html>
+

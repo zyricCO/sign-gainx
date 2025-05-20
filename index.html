@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secure Access - Financial Services (Dark Theme)</title>
+  <style>
+    body {
+      background-color: #1a1a1a; /* Dark background */
+      color: #f0f0f0; /* Light text */
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column; /* To position logo above the box */
+    }
+    .logo-container {
+      margin-bottom: 30px;
+      /* Consider using a logo version optimized for dark backgrounds (e.g., with white/light elements or transparent background) */
+    }
+    .logo-container img {
+      height: 50px; /* Adjust as needed */
+    }
+    .auth-box {
+      width: 90%;
+      max-width: 450px;
+      background-color: #2b2b2b; /* Darker box background */
+      border: 1px solid #444; /* Subtle border */
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Adjusted shadow for dark theme */
+    }
+    .header-text {
+      font-size: 1.5em;
+      color: #5dade2; /* Lighter, vibrant blue for headings */
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .sub-header-text {
+      font-size: 0.9em;
+      color: #aab8c2; /* Lighter grey for sub-text */
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #bdc3c7; /* Light grey for labels */
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+    input[type="text"] {
+      background-color: #343a40; /* Dark input background */
+      border: 1px solid #565e64; /* Darker border for input */
+      border-radius: 4px;
+      color: #f8f9fa; /* Light text in input */
+      width: calc(100% - 22px); /* Account for padding */
+      font-size: 1em;
+      padding: 10px;
+      font-family: inherit;
+    }
+    input[type="text"]::placeholder {
+      color: #868e96; /* Lighter placeholder text */
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #5dade2; /* Blue focus highlight (same as header) */
+      box-shadow: 0 0 0 0.2rem rgba(93, 173, 226, 0.25); /* Lighter blue shadow */
+    }
+    button {
+      background-color: #3498db; /* Bright blue for buttons */
+      border: none;
+      color: #ffffff; /* White text on button */
+      padding: 12px 20px;
+      cursor: pointer;
+      width: 100%;
+      border-radius: 4px;
+      font-size: 1em;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #2980b9; /* Slightly darker blue on hover */
+    }
+    .response-area {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.9em;
+      min-height: 40px; /* To prevent layout shift */
+    }
+    .response-area .success {
+      color: #2ecc71; /* Lighter green for success */
+    }
+    .response-area .error {
+      color: #e74c3c; /* Lighter red for error */
+    }
+    .response-area .info {
+      color: #3498db; /* Lighter blue for info (consistent with button) */
+    }
+    .loader {
+      border: 4px solid #343a40; /* Darker track for loader */
+      border-top: 4px solid #3498db; /* Blue spinner part (consistent with button) */
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo-container">
+    <img src="logo.png" alt="Financial Services Inc. Logo">
+  </div>
+
+  <div class="auth-box">
+    <div class="header-text">Secure Client Portal</div>
+    <div class="sub-header-text">Enter your QI-CODE to access your account.</div>
+    <form onsubmit="return handleSubmit(event)">
+      <div class="form-group">
+        <label for="qicode">QI-CODE:</label>
+        <input type="text" id="qicode" placeholder="Enter 16-digit code" maxlength="16" required autofocus />
+      </div>
+      <button type="submit" id="verifyButton">Verify</button>
+    </form>
+    <div class="response-area" id="response"></div>
+  </div>
+
+  <script>
+    // Function to simulate fetching user IP (replace with actual IP fetching for production)
+    async function getSimulatedUserIP() {
+      // In a real application, you would make an API call to a service.
+      // For example:
+      // try {
+      //   const response = await fetch('https://api.ipify.org?format=json');
+      //   if (!response.ok) throw new Error('Failed to fetch IP');
+      //   const data = await response.json();
+      //   return data.ip;
+      // } catch (error) {
+      //   console.error("IP Fetch Error:", error);
+      //   return "Unavailable"; // Fallback IP
+      // }
+
+      // For demonstration, we simulate an IP and a delay.
+      return new Promise(resolve => {
+        setTimeout(() => {
+          const octet1 = Math.floor(Math.random() * (223 - 1 + 1)) + 1; // Avoid 0.x.x.x and private ranges for simulation if desired
+          const octet2 = Math.floor(Math.random() * 256);
+          const octet3 = Math.floor(Math.random() * 256);
+          const octet4 = Math.floor(Math.random() * 254) + 1; // Avoid .0 and .255 for last octet
+          resolve(`${octet1}.${octet2}.${octet3}.${octet4}`);
+        }, 500); // Simulate network latency
+      });
+    }
+
+    async function handleSubmit(event) {
+      event.preventDefault(); // Prevent default form submission
+      const code = document.getElementById('qicode').value.trim();
+      const responseElement = document.getElementById('response');
+      const verifyButton = document.getElementById('verifyButton');
+
+      responseElement.innerHTML = ""; // Clear previous messages
+      verifyButton.disabled = true; // Disable button during processing
+      verifyButton.innerHTML = '<span class="loader"></span> Verifying...'; // Show loader
+
+      // Simulate a slight delay for the initial verification process
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if (code === "G29N1LPS62V91NK9") { // The correct QI-CODE
+        responseElement.className = 'response-area success';
+        responseElement.innerHTML = "QI-CODE accepted. Preparing your secure session...";
+
+        // Start simulated security checks after a brief pause
+        setTimeout(async () => {
+          responseElement.className = 'response-area info';
+          responseElement.innerHTML = '<span class="loader"></span> Performing security checks...';
+
+          // Simulate the time taken for security checks
+          await new Promise(resolve => setTimeout(resolve, 1500));
+
+          const userIP = await getSimulatedUserIP(); // Get the simulated IP
+          responseElement.innerHTML = `<span class="loader"></span> Security checks complete. Your IP: ${userIP}. Redirecting...`;
+
+          // Wait a bit more before redirecting so user can see the message
+          setTimeout(() => {
+            window.location.href = "user-data.html"; // Redirect to user data page
+          }, 2500);
+        }, 1000); // Delay before starting security checks
+
+      } else { // Incorrect QI-CODE
+        responseElement.className = 'response-area error';
+        responseElement.innerHTML = "ERROR: Invalid QI-CODE. Please try again.";
+        verifyButton.disabled = false; // Re-enable the button
+        verifyButton.innerHTML = 'Verify'; // Reset button text
+      }
+    }
+  </script>
+</body>
+</html>
